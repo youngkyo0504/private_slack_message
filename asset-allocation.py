@@ -254,10 +254,10 @@ def print_results(
         ]
     )
 
-    # 개별 자산 정보를 추가 (상위 5개만)
+    # 개별 자산 정보를 추가
     sorted_assets = sorted(
         asset_weights.items(), key=lambda x: x[1]["amount"], reverse=True
-    )[:5]
+    )
 
     for name, info in sorted_assets:
         blocks.append(
