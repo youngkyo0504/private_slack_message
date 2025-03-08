@@ -38,27 +38,91 @@ def get_tether_premium():
     exchange_rate = fetch_exchange()
 
     if not usdt_krw or not exchange_rate:
-        return "가격 정보를 가져오는데 실패했습니다."
+        return [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "가격 정보를 가져오는데 실패했습니다."
+                }
+            }
+        ]
 
     # 김치프리미엄 계산
     premium = calculate_kimchi_premium(usdt_krw, exchange_rate)
     avg_price, quantity = fetch_avg_price()
+    profit_percent = (round(usdt_krw) - round(avg_price)) / round(usdt_krw) * 100
+    profit_amount = (round(usdt_krw) - round(avg_price)) * quantity
 
-    # 메시지 작성
-    message = f"""
-📊 테더 김치프리미엄 현황
-- USDT/KRW: {format(round(usdt_krw), ',')}원
-- USD/KRW: {format(round(exchange_rate), ',')}원
-- 김치프리미엄: {premium}%
-- 현재 수익률: { (round(usdt_krw) - round(avg_price)) / round(usdt_krw) * 100:.2f}%
-- 실현 가능 차익: {  (round(usdt_krw) - round(avg_price)) *  quantity:.2f}원
-- 평균 매입 가격: {format(round(avg_price), ',')}원
-    """
+    # 블록킷 메시지 작성
+    blocks = [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "📊 테더 김치프리미엄 현황",
+                "emoji": True
+            }
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": f"*USDT/KRW:*\n{format(round(usdt_krw), ',')}원"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*USD/KRW:*\n{format(round(exchange_rate), ',')}원"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": f"*김치프리미엄:*\n{premium}%"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*현재 수익률:*\n{profit_percent:.2f}%"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": f"*실현 가능 차익:*\n{profit_amount:.2f}원"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*평균 매입 가격:*\n{format(round(avg_price), ',')}원"
+                }
+            ]
+        }
+    ]
 
     # 프리미엄 수준에 따른 메시지 추가
     if premium > 2.5:
-        message += "\n⚠️ 김프가 높습니다. 매수시 주의하세요!"
+        blocks.append({
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "⚠️ *김프가 높습니다. 매수시 주의하세요!*"
+            }
+        })
     elif premium < 1:
-        message += "\n💡 김프가 낮습니다. 매수 기회일 수 있습니다."
+        blocks.append({
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "💡 *김프가 낮습니다. 매수 기회일 수 있습니다.*"
+            }
+        })
 
-    return message.strip()
+    blocks.append({"type": "divider"})
+    
+    return blocks
