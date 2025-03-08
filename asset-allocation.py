@@ -1,5 +1,6 @@
 from google_sheets_manager import GoogleSheetsManager
 from typing import List, Dict, Tuple, Any
+from slack import post_block_message
 
 
 def main():
@@ -189,26 +190,106 @@ def calculate_class_weights(asset_data: List[List[str]]) -> Dict[str, Dict[str, 
     return class_weights
 
 
+slack_token = os.environ["SLACK_TOKEN"]
+
+
 def print_results(
     total_amount: float,
     asset_weights: Dict[str, Dict[str, Any]],
     class_weights: Dict[str, Dict[str, float]],
 ):
-    """결과 정보를 콘솔에 출력합니다."""
-    print(f"\n===== 포트폴리오 총액: {total_amount:,.0f}원 =====")
+    """결과 정보를 콘솔에 출력하고 슬랙에 메시지를 전송합니다."""
 
-    print("\n===== 자산 클래스별 비중 =====")
+    # 슬랙 메시지 블록 구성
+    blocks = [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "📊 자산 배분 현황 보고서",
+                "emoji": True,
+            },
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*📈 포트폴리오 총액*: *{total_amount:,.0f}원*",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": "*🔍 자산 클래스별 비중*"},
+        },
+    ]
+
+    # 자산 클래스별 비중을 표로 추가
+    class_fields = []
     for asset_class, info in class_weights.items():
-        print(
-            f"{asset_class}: {info['actual_weight']:.2f}% (목표: {info['target_weight']:.2f}%, 차이: {info['weight_diff']:.2f}%)"
+        # 목표 비중과 실제 비중의 차이에 따라 이모지 설정
+        diff = info["weight_diff"]
+        emoji = "🟢" if abs(diff) < 3 else ("🔴" if diff < 0 else "🟠")
+
+        class_fields.append({"type": "mrkdwn", "text": f"*{asset_class}*"})
+        class_fields.append(
+            {
+                "type": "mrkdwn",
+                "text": f"{info['actual_weight']:.2f}% ({emoji} {diff:+.2f}%)",
+            }
         )
 
-    print("\n===== 개별 자산 비중 =====")
-    for name, info in asset_weights.items():
-        print(
-            f"{name} ({info['ticker']}): {info['actual_weight']:.2f}% "
-            f"(목표: {info['target_weight']:.2f}%, 차이: {info['weight_diff']:.2f}%)"
+    # 필드를 2개씩 그룹화하여 표 형식으로 추가
+    for i in range(0, len(class_fields), 4):
+        blocks.append({"type": "section", "fields": class_fields[i : i + 4]})
+
+    blocks.extend(
+        [
+            {"type": "divider"},
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": "*📋 주요 개별 자산 정보*"},
+            },
+        ]
+    )
+
+    # 개별 자산 정보를 추가 (상위 5개만)
+    sorted_assets = sorted(
+        asset_weights.items(), key=lambda x: x[1]["amount"], reverse=True
+    )[:5]
+
+    for name, info in sorted_assets:
+        blocks.append(
+            {
+                "type": "section",
+                "fields": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*{name}* ({info['ticker']})\n{info['asset_class']}",
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*금액:* {info['amount']:,.0f}원\n*비중:* {info['actual_weight']:.2f}% (목표: {info['target_weight']:.2f}%)",
+                    },
+                ],
+            }
         )
+
+    # 현재 시간 추가
+    import datetime
+
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    blocks.append(
+        {
+            "type": "context",
+            "elements": [
+                {"type": "mrkdwn", "text": f"*마지막 업데이트:* {current_time}"}
+            ],
+        }
+    )
+
+    # 슬랙에 메시지 전송
+    post_block_message(slack_token, "#자산배분", blocks=blocks)
 
 
 if __name__ == "__main__":
