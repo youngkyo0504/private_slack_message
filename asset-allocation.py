@@ -260,6 +260,11 @@ def print_results(
     )
 
     for name, info in sorted_assets:
+        # 목표 비중과 실제 비중의 차이에 따라 이모지 설정
+        TOLERANCE = 3
+        diff = info["weight_diff"]
+        emoji = "🟢" if abs(diff) < TOLERANCE else ("🔴" if diff < 0 else "🟠")
+
         blocks.append(
             {
                 "type": "section",
@@ -270,7 +275,7 @@ def print_results(
                     },
                     {
                         "type": "mrkdwn",
-                        "text": f"*금액:* {info['amount']:,.0f}원\n*비중:* {info['actual_weight']:.2f}% (목표: {info['target_weight']:.2f}%)",
+                        "text": f"*금액:* {info['amount']:,.0f}원\n*비중:* {info['actual_weight']:.2f}% (목표: {info['target_weight']:.2f}%, {emoji} {diff:+.2f}%)",
                     },
                 ],
             }
