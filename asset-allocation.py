@@ -207,7 +207,7 @@ def print_results(
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": "📊 자산 배분 현황 보고서",
+                "text": "📊 연금 저축 자산 배분 현황 보고서",
                 "emoji": True,
             },
         },
