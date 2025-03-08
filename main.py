@@ -11,28 +11,29 @@ slack_token = os.environ["SLACK_TOKEN"]
 btc_blocks = bull_market("KRW-BTC")
 tether_blocks = get_tether_premium()
 risk_info = get_risk_info("BTC")
+
 risk_blocks = [
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": f"📊 비트코인 리스크 분석",
-                "emoji": True
-            }
-        },
-        {
-            "type": "section",
-            "fields": [
-                {
-                    "type": "mrkdwn",
-                    "text": f"*현재 리스크 레벨:*\n{risk_info["current_risk"]}"
-                }
-            ]
-        },
-        {
-            "type": "divider"
+    {
+        "type": "header",
+        "text": {
+            "type": "plain_text",
+            "text": "📊 비트코인 리스크 분석",
+            "emoji": True
         }
-    ]
+    },
+    {
+        "type": "section",
+        "fields": [
+            {
+                "type": "mrkdwn",
+                "text": f"*현재 리스크 레벨:*\n{risk_info['current_risk']}"
+            }
+        ]
+    },
+    {
+        "type": "divider"
+    }
+]
 
 # 모든 블록 합치기
 all_blocks = btc_blocks + tether_blocks + risk_blocks
