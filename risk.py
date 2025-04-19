@@ -9,4 +9,6 @@ def get_risk_info(symbol):
     if response.status_code == 200:
         return response.json()
     else:
-        response.raise_for_status()
+        return None
+        # 403 에러 발생하는 경우 있음
+        # response.raise_for_status()
