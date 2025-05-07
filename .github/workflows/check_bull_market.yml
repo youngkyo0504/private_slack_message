@@ -61,6 +61,7 @@ jobs:
       - name: Run special task
         run: |
           python asset-allocation.py
+          python isa.py
         env:
           SLACK_TOKEN: ${{secrets.SLACK_TOKEN}}
           MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}

@@ -27,7 +27,7 @@ def main():
 def read_retirement_saving():
     # 스프레드시트 상수 정의
     SPREADSHEET_ID = "1KwBg0x39gaaKjWFEt--tlQuX8mAb5pL6ZWtXMEI9VCs"
-    RANGE_NAME = "retirement-saving!A2:G10"
+    RANGE_NAME = "good!A2:G10"
 
     # GoogleSheetsManager 인스턴스 생성
     sheets_manager = GoogleSheetsManager()
@@ -207,7 +207,7 @@ def print_results(
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": "📊 연금 저축 자산 배분 현황 보고서",
+                "text": "🚀 ISA 자산 배분 현황 보고서",
                 "emoji": True,
             },
         },
