@@ -2,7 +2,6 @@ name: check_bull_market_every_9AM
 
 on:
   schedule:
-    - cron: "0 */4 * * *" # 4시간마다 실행
     - cron: "0 0,12 * * *" # 12시간마다 실행 (UTC 0시, 12시)
   push:
     branches: [main]
@@ -10,7 +9,7 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || contains(github.event.schedule, '*/4')
+    if: github.event_name == 'push' || contains(github.event.schedule, '0,12')
     strategy:
       max-parallel: 5
 
